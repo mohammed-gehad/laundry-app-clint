@@ -10,6 +10,8 @@ export const loginAsync = createAsyncThunk(
     if (result.data.message === "invalid email")
       throw new Error("invalid email");
     await AsyncStorage.setItem("token", result.headers.token);
+    await AsyncStorage.setItem("id", result.data._id);
+
     return { user: result.data, token: result.headers.token };
   }
 );
@@ -25,6 +27,8 @@ export const SignInAsync = createAsyncThunk(
     if (result.data.message === "invalid email")
       throw new Error("invalid email");
     await AsyncStorage.setItem("token", result.headers.token);
+    await AsyncStorage.setItem("id", result.data._id);
+
     return { user: result.data, token: result.headers.token };
   }
 );

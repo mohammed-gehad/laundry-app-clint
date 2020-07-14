@@ -1,16 +1,43 @@
 const axios = require("axios");
 import { AsyncStorage } from "react-native";
+import { store } from "../app/store";
+import { receiveMessage } from "../features/orders/ordersSlice";
+import io from "socket.io-client";
+
+export const baseURL = "https://a05a981e222b.ngrok.io";
+
+export const socket = io(baseURL);
+
+const identify = async (id) => {
+  if (id) socket.emit("identify", id);
+};
+
+socket.on("connect", async () => {
+  console.log("connected");
+  const id = await AsyncStorage.getItem("id");
+  if (id) identify(id);
+
+  socket.on("messageToCustomer", ({ id, message }) => {
+    console.log(message);
+    store.dispatch(receiveMessage({ id, message }));
+  });
+});
 
 const api = axios.create({
-  baseURL: "https://2b228533530b.ngrok.io",
-  // baseURL: "http://localhost:4000",
+  baseURL,
 });
 
 api.interceptors.request.use(
   async function (config) {
     // Do something before request is sent
     const token = await AsyncStorage.getItem("token");
-    if (token) config.headers.token = token;
+    const id = await AsyncStorage.getItem("id");
+
+    if (token) {
+      config.headers.token = token;
+    }
+    if (id) identify(id);
+
     return config;
   },
   function (error) {
